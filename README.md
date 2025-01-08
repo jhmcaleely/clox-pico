@@ -60,3 +60,26 @@ In each case, you will get a clox.uf2 firmware image. These are installed as usu
  - Use a terminal program to connect to a USB serial port. On my Mac this appeared as '/dev/tty.usbmodem1101', with a baud rate of 115200.
 
 I used the 'serial monitor' in VSCode, and found I needed to set 'Line ending' to either LF or CRLF to interact with the repl. The scripts in specimen/script-one-liners.txt are formatted for use on the repl, which requires one line at a time. Given the time needed to connect the serial monitor, I needed to press enter to get a fresh prompt.
+
+### Performance
+
+This code includes the two optimisations from Chapter 30, and is otherwise unoptimised for these microcontroller cores. On an RP2040, the spec says we have two ARM Cortex-M0+ cores at 133MHz. On an RP2350 we have dual Cortex-M33 or Hazard3 processors at 'up to' 150 MHz. In each case, clox only runs on one core. My host PC (for comparison) runs on an Apple Silicon M2 Max.
+
+Running the fibbonacci micro-benchmark from the book:
+
+```
+fun fib(n) {
+  if (n < 2) return n;
+  return fib(n - 2) + fib(n - 1);
+}
+
+var start = clock();
+print fib(35);
+print clock() - start;
+```
+
+| Apple Silicon | RP2040 | RP2350 ARM | RP2350 Risc-V |
+| --- | --- | --- | --- |
+| 2.36231 | 231.930 | 95.1600 | 121.672 |
+
+Times are as reported by clox. Units are seconds.
