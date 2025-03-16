@@ -63,7 +63,7 @@ I used the 'serial monitor' in VSCode, and found I needed to set 'Line ending' t
 
 ### Performance
 
-This code includes the two optimisations from Chapter 30, and is otherwise unoptimised for these microcontroller cores. On an RP2040, the spec says we have two ARM Cortex-M0+ cores at 133MHz. On an RP2350 we have dual Cortex-M33 or Hazard3 processors at 'up to' 150 MHz. In each case, clox only runs on one core. My host PC (for comparison) runs on an Apple Silicon M2 Max.
+This code includes the two optimisations from Chapter 30, and is otherwise unoptimised for these microcontroller cores. On an RP2040, the spec says we have two ARM Cortex-M0+ cores at 133MHz (200MHz after SDK 2.1.1). On an RP2350 we have dual Cortex-M33 or Hazard3 processors at 'up to' 150 MHz. In each case, clox only runs on one core. My host PC (for comparison) runs on an Apple Silicon M2 Max.
 
 Running the fibbonacci micro-benchmark from the book:
 
@@ -78,8 +78,11 @@ print fib(35);
 print clock() - start;
 ```
 
-| Apple Silicon | RP2040 | RP2350 ARM | RP2350 Risc-V |
-| --- | --- | --- | --- |
-| 2.36231 | 231.930 | 95.1600 | 121.672 |
+Apple Silicon: 2.36sec
 
-Times are as reported by clox. Units are seconds.
+| SDK | RP2040 | RP2350 ARM | RP2350 Risc-V |
+| --- | --- | --- | --- |
+| 2.1.0 | 232 | 95.2 | 122 |
+| 2.1.1 | 145 | 94.8 | 122 |
+
+Times are as reported by clox from one run. Units are seconds. The upgrade to SDK 2.1.1 bumped the RP2040 clock speed to 200MHz, and updated the ARM toolchain. The Risc-V toolchain was unchanged.

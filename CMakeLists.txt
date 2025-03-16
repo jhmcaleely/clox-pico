@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.13)
 if(PICO_BOARD)
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
+
+set(PICO_USE_FASTEST_SUPPORTED_CLOCK 1)
 endif()
 
 # The PICO SDK will also need CXX & ASM toolchains to assemble the firmware image
