@@ -12,35 +12,38 @@
         },
         {
             "name": "pico",
-            "displayName": "PICO SDK 2.1.0 for Pico (rp2040)",
+            "displayName": "PICO SDK 2.1.1 for Pico (rp2040)",
             "description": "Using the Pico SDK ARM toolchain",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
                 "PICO_BOARD": "pico",
-                "PICO_TOOLCHAIN_PATH": "$env{PICO_SDK_PATH}/../../toolchain/13_3_Rel1",
+                "PICO_SDK_PATH": "$env{HOME}/.pico-sdk/sdk/2.1.1",
+                "PICO_TOOLCHAIN_PATH": "$env{HOME}/.pico-sdk/toolchain/14_2_Rel1",
                 "CMAKE_BUILD_TYPE": "Release"
             } 
         },
         {
             "name": "pico2",
-            "displayName": "PICO SDK 2.1.0 for Pico2 (rp2350)",
+            "displayName": "PICO SDK 2.1.1 for Pico2 (rp2350)",
             "description": "Using the Pico SDK ARM toolchain",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
                 "PICO_BOARD": "pico2",
-                "PICO_TOOLCHAIN_PATH": "$env{PICO_SDK_PATH}/../../toolchain/13_3_Rel1",
+                "PICO_SDK_PATH": "$env{HOME}/.pico-sdk/sdk/2.1.1",
+                "PICO_TOOLCHAIN_PATH": "$env{HOME}/.pico-sdk/toolchain/14_2_Rel1",
                 "CMAKE_BUILD_TYPE": "Release"
             } 
         },
         {
             "name": "pico2r",
-            "displayName": "PICO SDK 2.1.0 for Pico2 (rp2350) RISC-V",
+            "displayName": "PICO SDK 2.1.1 for Pico2 (rp2350) RISC-V",
             "description": "Using the Pico SDK ARM toolchain",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "cacheVariables": {
                 "PICO_BOARD": "pico2",
+                "PICO_SDK_PATH": "$env{HOME}/.pico-sdk/sdk/2.1.1",
                 "PICO_PLATFORM": "rp2350-riscv",
-                "PICO_TOOLCHAIN_PATH": "$env{PICO_SDK_PATH}/../../toolchain/RISCV_RPI_2_0_0_5",
+                "PICO_TOOLCHAIN_PATH": "$env{HOME}/.pico-sdk/toolchain/RISCV_RPI_2_0_0_5",
                 "CMAKE_BUILD_TYPE": "Release"
             } 
         }
