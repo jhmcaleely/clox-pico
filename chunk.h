@@ -29,6 +29,8 @@ typedef enum {
     OP_DIVIDE,
     OP_NOT,
     OP_NEGATE,
+    OP_LEFT_SHIFT,
+    OP_RIGHT_SHIFT,
     OP_PRINT,
     OP_JUMP,
     OP_JUMP_IF_FALSE,

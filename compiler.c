@@ -450,6 +450,8 @@ static void binary(bool canAssign) {
         case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
         case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
         case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
+        case TOKEN_LEFT_SHIFT:    emitByte(OP_LEFT_SHIFT); break;
+        case TOKEN_RIGHT_SHIFT:   emitByte(OP_RIGHT_SHIFT); break;
         default:
             return; // Unreachable.
     }
@@ -620,8 +622,10 @@ ParseRule rules[] = {
     [TOKEN_EQUAL_EQUAL]   = {NULL,     binary, PREC_EQUALITY},
     [TOKEN_GREATER]       = {NULL,     binary, PREC_COMPARISON},
     [TOKEN_GREATER_EQUAL] = {NULL,     binary, PREC_COMPARISON},
+    [TOKEN_RIGHT_SHIFT]   = {NULL,     binary, PREC_FACTOR},
     [TOKEN_LESS]          = {NULL,     binary, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL]    = {NULL,     binary, PREC_COMPARISON},
+    [TOKEN_LEFT_SHIFT]    = {NULL,     binary, PREC_FACTOR},
     [TOKEN_IDENTIFIER]    = {variable, NULL,   PREC_NONE},
     [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
     [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
