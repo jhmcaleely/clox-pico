@@ -452,6 +452,9 @@ static void binary(bool canAssign) {
         case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
         case TOKEN_LEFT_SHIFT:    emitByte(OP_LEFT_SHIFT); break;
         case TOKEN_RIGHT_SHIFT:   emitByte(OP_RIGHT_SHIFT); break;
+        case TOKEN_BAR:           emitByte(OP_BIT_OR); break;
+        case TOKEN_AMP:           emitByte(OP_BIT_AND); break;
+        case TOKEN_CARET:         emitByte(OP_BIT_XOR); break;
         default:
             return; // Unreachable.
     }
@@ -616,6 +619,9 @@ ParseRule rules[] = {
     [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
     [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
     [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
+    [TOKEN_BAR]           = {NULL,     binary, PREC_TERM},
+    [TOKEN_AMP]           = {NULL,     binary, PREC_TERM},
+    [TOKEN_CARET]         = {NULL,     binary, PREC_TERM},
     [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
     [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_EQUALITY},
     [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
