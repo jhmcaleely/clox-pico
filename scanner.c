@@ -28,6 +28,26 @@ static bool isDigit(char c) {
     return c >= '0' && c <= '9';
 }
 
+static bool isHexDigit(char c) {
+    if (c >= 'a' && c <= 'f') {
+        return true;
+    } 
+    else if (c >= 'A' && c <= 'F') {
+        return true;
+    }
+    else {
+        return isDigit(c);
+    }
+}
+
+static bool isRadixDigit(char c, int radix) {
+    switch (radix) {
+        case 16: return isHexDigit(c);
+        case 10: return isDigit(c);
+        default: return false;
+    }
+}
+
 static bool isAtEnd() {
     return *scanner.current == '\0';
 }
@@ -148,18 +168,48 @@ static Token identifier() {
     return makeToken(identifierType());
 }
 
-static Token number() {
-    while (isDigit(peek())) advance();
+static bool isRadix(char c) {
+    switch (c) {
+        case 'x': return true;
+        case 'X': return true;
+        default: return false;
+    }
+}
 
-    // Look for a fractional part.
-    if (peek() == '.' && isDigit(peekNext())) {
+static int radixType(char c) {
+    switch (c) {
+        case 'x': return 16;
+        case 'X': return 16;
+        default: return 10;
+    }
+}
+
+static Token number() {
+    int radix = 10;
+    if (isRadix(peek())) {
+        radix = radixType(peek());
+        advance();
+
+        if (!isRadixDigit(peek(), radix)) {
+            return errorToken("Expected digit after radix specifier.");
+        }
+    }
+
+    while (isRadixDigit(peek(), radix)) advance();
+
+    // Look for a fractional part in base 10 numbers.
+    if (radix == 10 && peek() == '.' && isDigit(peekNext())) {
         // Consume the ".".
         advance();
         
         while (isDigit(peek())) advance();
     }
 
-    return makeToken(TOKEN_NUMBER);
+    if (radix == 16) {
+        return makeToken(TOKEN_HEX_NUMBER);
+    } else {
+        return makeToken(TOKEN_NUMBER);
+    }
 }
 
 static Token string() {
