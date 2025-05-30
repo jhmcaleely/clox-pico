@@ -31,24 +31,29 @@ class alias_reg {
 
 fun gpio_set_direction(pin, dir) {
     var ctrl = alias_reg(SIO_HW + GPIO_OE_OFFSET, 4);
-
+    var fn;
     if (dir) {
-        ctrl.set(0x1 << pin);
+        fn = ctrl.set;
     }
     else {
-        ctrl.clr(0x1 << pin);
+        fn = ctrl.clr;
     }
+
+    fn(1 << pin);
 }
 
 fun gpio_put(pin, value) {
     var ctrl = alias_reg(SIO_HW + GPIO_OUT_OFFSET, 4);
+    var fn;
 
     if (value) {
-        ctrl.set(0x1 << pin);
+        fn = ctrl.set;
     }
     else {
-        ctrl.clr(0x1 << pin);
+        fn = ctrl.clr;
     }
+    
+    fn(1 << pin);
 }
 
 fun gpio_init(pin) {
