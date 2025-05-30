@@ -24,7 +24,7 @@ static Value peekNative(int argCount, Value* args) {
     uint32_t res = *reg;
 #else
     uint32_t res = 1;
-    printf("rpeek(%p)\n", reg);
+    printf("peek(%p)\n", reg);
 #endif
     return NUMBER_VAL((double)res);
 }
@@ -37,7 +37,7 @@ static Value pokeNative(int argCount, Value* args) {
 #ifdef LOX_PICO_SDK
     *reg = val;
 #else
-    printf("rpoke(%p, %08.x)\n", reg, val);
+    printf("poke(%p, %08.x)\n", reg, val);
 #endif
     return args[1];
 }
@@ -96,8 +96,8 @@ void initVM() {
     vm.initString = copyString("init", 4);
 
     defineNative("clock", clockNative);
-    defineNative("rpeek", peekNative);
-    defineNative("rpoke", pokeNative);
+    defineNative("peek", peekNative);
+    defineNative("poke", pokeNative);
 }
 
 void freeVM() {
