@@ -17,23 +17,21 @@ static Value clockNative(int argCount, Value* args) {
 }
 
 static Value peekNative(int argCount, Value* args) {
-    double nominal_address = AS_NUMBER(args[0]);
-    uint32_t address = (uint32_t)nominal_address;
-    volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)nominal_address;
+    uint32_t address = (uint32_t)AS_NUMBER(args[0]);
+    volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)address;
+
 #ifdef LOX_PICO_SDK
     uint32_t res = *reg;
 #else
     uint32_t res = 1;
     printf("rpeek(%p)\n", reg);
 #endif
-
     return NUMBER_VAL((double)res);
 }
 
 static Value pokeNative(int argCount, Value* args) {
-    double nominal_address = AS_NUMBER(args[0]);
-    uint32_t address = (uint32_t)nominal_address;
-    volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)nominal_address;
+    uint32_t address = (uint32_t)AS_NUMBER(args[0]);
+    volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)address;
 
     uint32_t val = (uint32_t) AS_NUMBER(args[1]);
 #ifdef LOX_PICO_SDK
