@@ -16,6 +16,34 @@ static Value clockNative(int argCount, Value* args) {
     return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
 }
 
+static Value peekNative(int argCount, Value* args) {
+    double nominal_address = AS_NUMBER(args[0]);
+    uint32_t address = (uint32_t)nominal_address;
+    volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)nominal_address;
+#ifdef LOX_PICO_SDK
+    uint32_t res = *reg;
+#else
+    uint32_t res = 1;
+    printf("rpeek(%p)\n", reg);
+#endif
+
+    return NUMBER_VAL((double)res);
+}
+
+static Value pokeNative(int argCount, Value* args) {
+    double nominal_address = AS_NUMBER(args[0]);
+    uint32_t address = (uint32_t)nominal_address;
+    volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)nominal_address;
+
+    uint32_t val = (uint32_t) AS_NUMBER(args[1]);
+#ifdef LOX_PICO_SDK
+    *reg = val;
+#else
+    printf("rpoke(%p, %08.x)\n", reg, val);
+#endif
+    return args[1];
+}
+
 static void resetStack() {
     vm.stackTop = vm.stack;
     vm.frameCount = 0;
@@ -70,6 +98,8 @@ void initVM() {
     vm.initString = copyString("init", 4);
 
     defineNative("clock", clockNative);
+    defineNative("rpeek", peekNative);
+    defineNative("rpoke", pokeNative);
 }
 
 void freeVM() {
