@@ -251,6 +251,27 @@ static void concatenate() {
     push(OBJ_VAL(result));
 }
 
+static void binaryBitOp(OpCode op) {
+
+    double b = AS_NUMBER(pop());
+    double a = AS_NUMBER(pop());
+    uint32_t lhs = (uint32_t) a;
+    uint32_t rhs = (uint32_t) b;
+    uint32_t result;
+
+    switch (op) {
+        case OP_BIT_AND: result = lhs & rhs; break;
+        case OP_BIT_OR: result = lhs | rhs; break;
+        case OP_BIT_XOR: result = lhs ^ rhs; break;
+        case OP_LEFT_SHIFT: result = lhs << rhs; break;
+        case OP_RIGHT_SHIFT: result = lhs >> rhs; break;
+        default: break;
+    }
+
+    double res = (double) result;
+    push(NUMBER_VAL(res));
+}
+
 static InterpretResult run() {
     CallFrame* frame = &vm.frames[vm.frameCount - 1];
 
@@ -418,6 +439,18 @@ static InterpretResult run() {
                 }
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
+            case OP_BIT_AND:
+            case OP_BIT_OR:
+            case OP_BIT_XOR:
+            case OP_LEFT_SHIFT:
+            case OP_RIGHT_SHIFT: {
+                if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
+                    runtimeError("Operands must be numbers.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+                binaryBitOp(instruction);
+                break;
+            }
             case OP_PRINT: {
                 printValue(pop());
                 printf("\n");
