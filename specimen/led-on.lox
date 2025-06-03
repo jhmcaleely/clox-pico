@@ -7,8 +7,8 @@ var RP2040 = true;
 
 var GPIO_FUNC_SIO = 0x5;
 var SIO_HW = 0xd0000000;
-var GPIO_OUT_OFFSET = 0x00000010;
-var GPIO_OE_OFFSET  = 0x00000020;
+var GPIO_OUT_OFFSET = 0x10;
+var GPIO_OE_OFFSET  = 0x20;
 
 var PADS_BANK0_BASE = 0x4001c000;
 var IO_BANK0_BASE   = 0x40014000;
@@ -31,29 +31,24 @@ class alias_reg {
 
 fun gpio_set_direction(pin, dir) {
     var ctrl = alias_reg(SIO_HW + GPIO_OE_OFFSET, 4);
-    var fn;
+    var pin_mask = 1 << pin;
     if (dir) {
-        fn = ctrl.set;
+        ctrl.set(pin_mask);
     }
     else {
-        fn = ctrl.clr;
+        ctrl.clr(pin_mask);
     }
-
-    fn(1 << pin);
 }
 
 fun gpio_put(pin, value) {
     var ctrl = alias_reg(SIO_HW + GPIO_OUT_OFFSET, 4);
-    var fn;
-
+    var pin_mask = 1 << pin;
     if (value) {
-        fn = ctrl.set;
+        ctrl.set(pin_mask);
     }
     else {
-        fn = ctrl.clr;
+        ctrl.clr(pin_mask);
     }
-    
-    fn(1 << pin);
 }
 
 fun gpio_init(pin) {
@@ -64,12 +59,12 @@ fun gpio_init(pin) {
 
 fun gpio_set_function(pin, function) {
 
-    var pads_bank_0_pin_offset = 0x4 + 0x4 * pin;
+    var pads_bank_0_pin_offset = 4 + 4 * pin;
     var pinctrl = alias_reg(PADS_BANK0_BASE + pads_bank_0_pin_offset, 4096);
 
     pinctrl.write_masked(PADS_BANK0_GPIO0_IE_BITS, PADS_BANK0_GPIO0_IE_BITS | PADS_BANK0_GPIO0_OD_BITS);
 
-    var ctrl_offset = 0x8 * pin + 0x4;
+    var ctrl_offset = 8 * pin + 4;
     var hw_ctrl = alias_reg(IO_BANK0_BASE + ctrl_offset, 4096);
     hw_ctrl.write(function);
 
