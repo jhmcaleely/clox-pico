@@ -466,13 +466,13 @@ static InterpretResult run() {
                 break;
             }
             case OP_POKE: {
-                uint32_t val = (uint32_t) AS_NUMBER(pop());
+                uint32_t value = (uint32_t) AS_NUMBER(pop());
 
                 uint32_t address = (uint32_t) AS_NUMBER(pop());
                 volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)address;
-                
+
 #ifdef LOX_PICO_SDK
-                *reg = val;
+                *reg = value;
 #else
                 printf("poke(%10.p, 0x%08.x)\n", reg, val);
 #endif
