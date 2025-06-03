@@ -21,12 +21,12 @@ class alias_reg {
     init(addr, stride) { this.base = addr; this.stride = stride; }
 
     read() { return peek(this.base); }
-    write(val) { poke(this.base, val); }
+    write(val) { poke this.base, val; }
     write_masked(val, mask) { this.xor((this.read() ^ val) & mask); }
 
-    set(mask) { poke(this.base + 1 * this.stride, mask); }
-    clr(mask) { poke(this.base + 2 * this.stride, mask); }
-    xor(mask) { poke(this.base + 3 * this.stride, mask); }
+    set(mask) { poke this.base + 1 * this.stride, mask; }
+    clr(mask) { poke this.base + 2 * this.stride, mask; }
+    xor(mask) { poke this.base + 3 * this.stride, mask; }
 }
 
 fun gpio_set_direction(pin, dir) {

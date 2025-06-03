@@ -34,6 +34,7 @@ typedef enum {
     OP_BIT_OR,
     OP_BIT_AND,
     OP_BIT_XOR,
+    OP_POKE,
     OP_PRINT,
     OP_JUMP,
     OP_JUMP_IF_FALSE,

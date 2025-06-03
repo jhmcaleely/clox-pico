@@ -874,6 +874,14 @@ static void ifStatement() {
     patchJump(elseJump);
 }
 
+static void pokeStatement() {
+    expression();
+    consume(TOKEN_COMMA, "Expect ',' after address.");
+    expression();
+    consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+    emitByte(OP_POKE);
+}
+
 static void printStatement() {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after value.");
@@ -952,7 +960,9 @@ static void declaration() {
 }
 
 static void statement() {
-    if (match(TOKEN_PRINT)) {
+    if (match(TOKEN_POKE)) {
+        pokeStatement();
+    } else if (match(TOKEN_PRINT)) {
         printStatement();
     } else if (match(TOKEN_FOR)) {
         forStatement();

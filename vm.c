@@ -29,19 +29,6 @@ static Value peekNative(int argCount, Value* args) {
     return NUMBER_VAL((double)res);
 }
 
-static Value pokeNative(int argCount, Value* args) {
-    uint32_t address = (uint32_t)AS_NUMBER(args[0]);
-    volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)address;
-
-    uint32_t val = (uint32_t) AS_NUMBER(args[1]);
-#ifdef LOX_PICO_SDK
-    *reg = val;
-#else
-    printf("poke(%p, %08.x)\n", reg, val);
-#endif
-    return args[1];
-}
-
 static void resetStack() {
     vm.stackTop = vm.stack;
     vm.frameCount = 0;
@@ -97,7 +84,6 @@ void initVM() {
 
     defineNative("clock", clockNative);
     defineNative("peek", peekNative);
-    defineNative("poke", pokeNative);
 }
 
 void freeVM() {
@@ -477,6 +463,19 @@ static InterpretResult run() {
                     return INTERPRET_RUNTIME_ERROR;
                 }
                 binaryBitOp(instruction);
+                break;
+            }
+            case OP_POKE: {
+                uint32_t val = (uint32_t) AS_NUMBER(pop());
+
+                uint32_t address = (uint32_t) AS_NUMBER(pop());
+                volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)address;
+                
+#ifdef LOX_PICO_SDK
+                *reg = val;
+#else
+                printf("poke(%10.p, 0x%08.x)\n", reg, val);
+#endif
                 break;
             }
             case OP_PRINT: {
