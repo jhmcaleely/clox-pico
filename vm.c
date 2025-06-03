@@ -265,27 +265,6 @@ static void concatenate() {
     push(OBJ_VAL(result));
 }
 
-static void binaryBitOp(OpCode op) {
-
-    double b = AS_NUMBER(pop());
-    double a = AS_NUMBER(pop());
-    uint32_t lhs = (uint32_t) a;
-    uint32_t rhs = (uint32_t) b;
-    uint32_t result;
-
-    switch (op) {
-        case OP_BIT_AND: result = lhs & rhs; break;
-        case OP_BIT_OR: result = lhs | rhs; break;
-        case OP_BIT_XOR: result = lhs ^ rhs; break;
-        case OP_LEFT_SHIFT: result = lhs << rhs; break;
-        case OP_RIGHT_SHIFT: result = lhs >> rhs; break;
-        default: break;
-    }
-
-    double res = (double) result;
-    push(NUMBER_VAL(res));
-}
-
 static InterpretResult run() {
     CallFrame* frame = &vm.frames[vm.frameCount - 1];
 
@@ -308,6 +287,17 @@ static InterpretResult run() {
         double b = AS_NUMBER(pop()); \
         double a = AS_NUMBER(pop()); \
         push(valueType(a op b)); \
+    } while (false)
+#define BINARY_UINT_OP(op) \
+    do { \
+        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+            runtimeError("Operands must be numbers."); \
+            return INTERPRET_RUNTIME_ERROR; \
+        } \
+        uint32_t b = (uint32_t) AS_NUMBER(pop()); \
+        uint32_t a = (uint32_t) AS_NUMBER(pop()); \
+        uint32_t result = a op b; \
+        push(NUMBER_VAL((double) result)); \
     } while (false)
 
     for (;;) {
@@ -453,18 +443,11 @@ static InterpretResult run() {
                 }
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
-            case OP_BIT_AND:
-            case OP_BIT_OR:
-            case OP_BIT_XOR:
-            case OP_LEFT_SHIFT:
-            case OP_RIGHT_SHIFT: {
-                if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) {
-                    runtimeError("Operands must be numbers.");
-                    return INTERPRET_RUNTIME_ERROR;
-                }
-                binaryBitOp(instruction);
-                break;
-            }
+            case OP_BIT_AND: BINARY_UINT_OP(&); break;
+            case OP_BIT_OR: BINARY_UINT_OP(|); break;
+            case OP_BIT_XOR: BINARY_UINT_OP(^); break;
+            case OP_LEFT_SHIFT: BINARY_UINT_OP(<<); break;
+            case OP_RIGHT_SHIFT: BINARY_UINT_OP(>>); break;
             case OP_POKE: {
                 uint32_t value = (uint32_t) AS_NUMBER(pop());
 
@@ -583,6 +566,7 @@ static InterpretResult run() {
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+#undef BINARY_UINT_OP
 }
 
 InterpretResult interpret(const char* source) {
