@@ -17,7 +17,11 @@ static Value clockNative(int argCount, Value* args) {
 }
 
 static Value peekNative(int argCount, Value* args) {
-    uint32_t address = (uint32_t)AS_NUMBER(args[0]);
+    if (argCount != 1 || !is_uint32(args[0])) {
+        return NIL_VAL;
+    }
+
+    uint32_t address = as_uint32(args[0]);
     volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)address;
 
 #ifdef LOX_PICO_SDK
@@ -294,8 +298,8 @@ static InterpretResult run() {
             runtimeError("Operands must be numbers that can be uint32."); \
             return INTERPRET_RUNTIME_ERROR; \
         } \
-        uint32_t b = (uint32_t) as_uint32(pop()); \
-        uint32_t a = (uint32_t) as_uint32(pop()); \
+        uint32_t b = as_uint32(pop()); \
+        uint32_t a = as_uint32(pop()); \
         uint32_t result = a op b; \
         push(NUMBER_VAL((double) result)); \
     } while (false)
