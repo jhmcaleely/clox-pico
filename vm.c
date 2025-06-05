@@ -457,7 +457,7 @@ static InterpretResult run() {
 #ifdef LOX_PICO_SDK
                 *reg = value;
 #else
-                printf("poke(%10.p, 0x%08.x)\n", reg, val);
+                printf("poke(%10.p, 0x%08.x)\n", reg, value);
 #endif
                 break;
             }
