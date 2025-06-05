@@ -465,9 +465,14 @@ static InterpretResult run() {
             case OP_LEFT_SHIFT: BINARY_UINT_OP(<<); break;
             case OP_RIGHT_SHIFT: BINARY_UINT_OP(>>); break;
             case OP_POKE: {
-                uint32_t value = (uint32_t) AS_NUMBER(pop());
+                if (!is_uint32(peek(0)) || !is_uint32(peek(1))) {
+                    runtimeError("Operands must be numbers that can be uint32.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
 
-                uint32_t address = (uint32_t) AS_NUMBER(pop());
+                uint32_t value = as_uint32(pop());
+
+                uint32_t address = as_uint32(pop());
                 volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)address;
 
 #ifdef LOX_PICO_SDK
