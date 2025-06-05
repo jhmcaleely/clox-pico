@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -265,6 +266,21 @@ static void concatenate() {
     push(OBJ_VAL(result));
 }
 
+static bool is_uint32(Value v) {
+    if (IS_NUMBER(v)) {
+        double d = AS_NUMBER(v);
+        double i = trunc(d);
+        return d == i && i >=0 && i <= UINT32_MAX;
+    }
+    return false;
+}
+
+static uint32_t as_uint32(Value v) {
+    double d = AS_NUMBER(v);
+    double ui32 = trunc(d);
+    return (uint32_t) ui32;
+}
+
 static InterpretResult run() {
     CallFrame* frame = &vm.frames[vm.frameCount - 1];
 
@@ -290,12 +306,12 @@ static InterpretResult run() {
     } while (false)
 #define BINARY_UINT_OP(op) \
     do { \
-        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
-            runtimeError("Operands must be numbers."); \
+        if (!is_uint32(peek(0)) || !is_uint32(peek(1))) { \
+            runtimeError("Operands must be numbers that can be uint32."); \
             return INTERPRET_RUNTIME_ERROR; \
         } \
-        uint32_t b = (uint32_t) AS_NUMBER(pop()); \
-        uint32_t a = (uint32_t) AS_NUMBER(pop()); \
+        uint32_t b = (uint32_t) as_uint32(pop()); \
+        uint32_t a = (uint32_t) as_uint32(pop()); \
         uint32_t result = a op b; \
         push(NUMBER_VAL((double) result)); \
     } while (false)
