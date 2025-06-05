@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <math.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -264,21 +263,6 @@ static void concatenate() {
     pop();
     pop();
     push(OBJ_VAL(result));
-}
-
-static bool is_uint32(Value v) {
-    if (IS_NUMBER(v)) {
-        double d = AS_NUMBER(v);
-        double i = trunc(d);
-        return d == i && i >=0 && i <= UINT32_MAX;
-    }
-    return false;
-}
-
-static uint32_t as_uint32(Value v) {
-    double d = AS_NUMBER(v);
-    double ui32 = trunc(d);
-    return (uint32_t) ui32;
 }
 
 static InterpretResult run() {

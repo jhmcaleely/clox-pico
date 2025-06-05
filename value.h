@@ -84,6 +84,9 @@ typedef struct {
 
 #endif
 
+bool is_uint32(Value v);
+uint32_t as_uint32(Value v);
+
 typedef struct {
     int capacity;
     int count;

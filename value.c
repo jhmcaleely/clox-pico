@@ -1,9 +1,25 @@
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "object.h"
 #include "memory.h"
 #include "value.h"
+
+bool is_uint32(Value v) {
+    if (IS_NUMBER(v)) {
+        double d = AS_NUMBER(v);
+        double i = trunc(d);
+        return d == i && i >=0 && i <= (double) UINT32_MAX;
+    }
+    return false;
+}
+
+uint32_t as_uint32(Value v) {
+    double d = AS_NUMBER(v);
+    double ui32 = trunc(d);
+    return (uint32_t) ui32;
+}
 
 void initValueArray(ValueArray* array) {
     array->values = NULL;
