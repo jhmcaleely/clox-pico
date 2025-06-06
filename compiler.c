@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -135,6 +136,40 @@ static bool match(TokenType type) {
     if (!check(type)) return false;
     advance();
     return true;
+}
+
+static uint32_t strtoNum(const char* literal, int length, int radix) {
+    uint32_t val = 0;
+    for (int i = length - 1 ; i >= 0; i--) {
+        uint32_t positionVal = 0;
+        switch (literal[i]) {
+            case '0': positionVal = 0; break;
+            case '1': positionVal = 1; break;
+            case '2': positionVal = 2; break;
+            case '3': positionVal = 3; break;
+            case '4': positionVal = 4; break;
+            case '5': positionVal = 5; break;
+            case '6': positionVal = 6; break;
+            case '7': positionVal = 7; break;
+            case '8': positionVal = 8; break;
+            case '9': positionVal = 9; break;
+            case 'A': positionVal = 10; break;
+            case 'B': positionVal = 11; break;
+            case 'C': positionVal = 12; break;
+            case 'D': positionVal = 13; break;
+            case 'E': positionVal = 14; break;
+            case 'F': positionVal = 15; break;
+            case 'a': positionVal = 10; break;
+            case 'b': positionVal = 11; break;
+            case 'c': positionVal = 12; break;
+            case 'd': positionVal = 13; break;
+            case 'e': positionVal = 14; break;
+            case 'f': positionVal = 15; break;
+        }
+        uint32_t power = length - 1 - i;
+        val += positionVal * pow(radix, power);
+    }
+    return val;
 }
 
 static void emitByte(uint8_t byte) {
@@ -415,6 +450,11 @@ static void binary(bool canAssign) {
         case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
         case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
         case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
+        case TOKEN_LEFT_SHIFT:    emitByte(OP_LEFT_SHIFT); break;
+        case TOKEN_RIGHT_SHIFT:   emitByte(OP_RIGHT_SHIFT); break;
+        case TOKEN_BAR:           emitByte(OP_BIT_OR); break;
+        case TOKEN_AMP:           emitByte(OP_BIT_AND); break;
+        case TOKEN_CARET:         emitByte(OP_BIT_XOR); break;
         default:
             return; // Unreachable.
     }
@@ -457,6 +497,17 @@ static void grouping(bool canAssign) {
 
 static void number(bool canAssign) {
     double value = strtod(parser.previous.start, NULL);
+    emitConstant(NUMBER_VAL(value));
+}
+
+static void hexnum(bool canAssign) {
+
+    // strip off the 0x prefix
+    const char* number_start = &parser.previous.start[2];
+    int number_len = parser.previous.length - 2;
+
+    uint32_t value = strtoNum(number_start, number_len, 16);
+
     emitConstant(NUMBER_VAL(value));
 }
 
@@ -568,17 +619,23 @@ ParseRule rules[] = {
     [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
     [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
     [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
+    [TOKEN_BAR]           = {NULL,     binary, PREC_TERM},
+    [TOKEN_AMP]           = {NULL,     binary, PREC_TERM},
+    [TOKEN_CARET]         = {NULL,     binary, PREC_TERM},
     [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
     [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_EQUALITY},
     [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_EQUAL_EQUAL]   = {NULL,     binary, PREC_EQUALITY},
     [TOKEN_GREATER]       = {NULL,     binary, PREC_COMPARISON},
     [TOKEN_GREATER_EQUAL] = {NULL,     binary, PREC_COMPARISON},
+    [TOKEN_RIGHT_SHIFT]   = {NULL,     binary, PREC_FACTOR},
     [TOKEN_LESS]          = {NULL,     binary, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL]    = {NULL,     binary, PREC_COMPARISON},
+    [TOKEN_LEFT_SHIFT]    = {NULL,     binary, PREC_FACTOR},
     [TOKEN_IDENTIFIER]    = {variable, NULL,   PREC_NONE},
     [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
     [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
+    [TOKEN_HEX_NUMBER]    = {hexnum,   NULL,   PREC_NONE},
     [TOKEN_AND]           = {NULL,     and_,   PREC_NONE},
     [TOKEN_CLASS]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
@@ -817,6 +874,14 @@ static void ifStatement() {
     patchJump(elseJump);
 }
 
+static void pokeStatement() {
+    expression();
+    consume(TOKEN_COMMA, "Expect ',' after address.");
+    expression();
+    consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+    emitByte(OP_POKE);
+}
+
 static void printStatement() {
     expression();
     consume(TOKEN_SEMICOLON, "Expect ';' after value.");
@@ -895,7 +960,9 @@ static void declaration() {
 }
 
 static void statement() {
-    if (match(TOKEN_PRINT)) {
+    if (match(TOKEN_POKE)) {
+        pokeStatement();
+    } else if (match(TOKEN_PRINT)) {
         printStatement();
     } else if (match(TOKEN_FOR)) {
         forStatement();

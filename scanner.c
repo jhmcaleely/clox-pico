@@ -28,6 +28,26 @@ static bool isDigit(char c) {
     return c >= '0' && c <= '9';
 }
 
+static bool isHexDigit(char c) {
+    if (c >= 'a' && c <= 'f') {
+        return true;
+    } 
+    else if (c >= 'A' && c <= 'F') {
+        return true;
+    }
+    else {
+        return isDigit(c);
+    }
+}
+
+static bool isRadixDigit(char c, int radix) {
+    switch (radix) {
+        case 16: return isHexDigit(c);
+        case 10: return isDigit(c);
+        default: return false;
+    }
+}
+
 static bool isAtEnd() {
     return *scanner.current == '\0';
 }
@@ -125,7 +145,14 @@ static TokenType identifierType() {
         case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
         case 'n': return checkKeyword(1, 2, "il", TOKEN_NIL);
         case 'o': return checkKeyword(1, 1, "r", TOKEN_OR);
-        case 'p': return checkKeyword(1, 4, "rint", TOKEN_PRINT); 
+        case 'p':
+            if (scanner.current - scanner.start > 1) {
+                switch (scanner.start[1]) {
+                    case 'o': return checkKeyword(2, 2, "ke", TOKEN_POKE);
+                    case 'r': return checkKeyword(2, 3, "int", TOKEN_PRINT);
+                }
+            }
+            break;
         case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
         case 's': return checkKeyword(1, 4, "uper", TOKEN_SUPER);
         case 't':
@@ -148,18 +175,48 @@ static Token identifier() {
     return makeToken(identifierType());
 }
 
-static Token number() {
-    while (isDigit(peek())) advance();
+static bool isRadix(char c) {
+    switch (c) {
+        case 'x': return true;
+        case 'X': return true;
+        default: return false;
+    }
+}
 
-    // Look for a fractional part.
-    if (peek() == '.' && isDigit(peekNext())) {
+static int radixType(char c) {
+    switch (c) {
+        case 'x': return 16;
+        case 'X': return 16;
+        default: return 10;
+    }
+}
+
+static Token number() {
+    int radix = 10;
+    if (isRadix(peek())) {
+        radix = radixType(peek());
+        advance();
+
+        if (!isRadixDigit(peek(), radix)) {
+            return errorToken("Expected digit after radix specifier.");
+        }
+    }
+
+    while (isRadixDigit(peek(), radix)) advance();
+
+    // Look for a fractional part in base 10 numbers.
+    if (radix == 10 && peek() == '.' && isDigit(peekNext())) {
         // Consume the ".".
         advance();
         
         while (isDigit(peek())) advance();
     }
 
-    return makeToken(TOKEN_NUMBER);
+    if (radix == 16) {
+        return makeToken(TOKEN_HEX_NUMBER);
+    } else {
+        return makeToken(TOKEN_NUMBER);
+    }
 }
 
 static Token string() {
@@ -197,14 +254,25 @@ Token scanToken() {
         case '+': return makeToken(TOKEN_PLUS);
         case '/': return makeToken(TOKEN_SLASH);
         case '*': return makeToken(TOKEN_STAR);
+        case '|': return makeToken(TOKEN_BAR);
+        case '&': return makeToken(TOKEN_AMP);
+        case '^': return makeToken(TOKEN_CARET);
         case '!':
             return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         case '=':
             return makeToken(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
         case '<':
-            return makeToken(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
+            switch (peek()) {
+                case '<': advance(); return makeToken(TOKEN_LEFT_SHIFT);
+                case '=': advance(); return makeToken(TOKEN_LESS_EQUAL);
+                default: return makeToken(TOKEN_LESS);
+            }  
         case '>':
-            return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+            switch (peek()) {
+                case '>': advance(); return makeToken(TOKEN_RIGHT_SHIFT);
+                case '=': advance(); return makeToken(TOKEN_GREATER_EQUAL);
+                default: return makeToken(TOKEN_GREATER);
+            }
         case '"': return string();
     }
 

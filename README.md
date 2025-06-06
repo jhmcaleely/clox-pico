@@ -61,6 +61,16 @@ In each case, you will get a clox.uf2 firmware image. These are installed as usu
 
 I used the 'serial monitor' in VSCode, and found I needed to set 'Line ending' to either LF or CRLF to interact with the repl. The scripts in specimen/script-one-liners.txt are formatted for use on the repl, which requires one line at a time. Given the time needed to connect the serial monitor, I needed to press enter to get a fresh prompt.
 
+### Language Additions
+
+There are three additions to the Lox language:
+
+ - Support for the notation 0x prefixing a base 16 hex number, wherever numbers can be used.
+ - Bitwise operations `<<`, `>>`, `|`, `&`, and `^`, similar to C. They truncate (reporting an error for out of range) a Number to an unsigned 32 bit integer before performing the operation.
+ - `peek()` and `poke address, value`. `peek()` reads a 32bit uint from the specified memory address. `poke` writes the value (truncating it to a 32bit uint) to the specified memory address. Intended for manipulating peripheral registers.
+
+ These additions are excercised in specimen/led-on.lox, which will turn on the built in LED on a Pico or Pico 2.
+
 ### Performance
 
 This code includes the two optimisations from Chapter 30, and is otherwise unoptimised for these microcontroller cores. On an RP2040, the spec says we have two ARM Cortex-M0+ cores at 133MHz (200MHz after SDK 2.1.1). On an RP2350 we have dual Cortex-M33 or Hazard3 processors at 'up to' 150 MHz. In each case, clox only runs on one core. My host PC (for comparison) runs on an Apple Silicon M2 Max.

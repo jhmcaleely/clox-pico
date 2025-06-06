@@ -16,6 +16,23 @@ static Value clockNative(int argCount, Value* args) {
     return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
 }
 
+static Value peekNative(int argCount, Value* args) {
+    if (argCount != 1 || !is_uint32(args[0])) {
+        return NIL_VAL;
+    }
+
+    uint32_t address = as_uint32(args[0]);
+    volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)address;
+
+#ifdef LOX_PICO_SDK
+    uint32_t res = *reg;
+#else
+    uint32_t res = 1;
+    printf("peek(%p)\n", reg);
+#endif
+    return NUMBER_VAL((double)res);
+}
+
 static void resetStack() {
     vm.stackTop = vm.stack;
     vm.frameCount = 0;
@@ -70,6 +87,7 @@ void initVM() {
     vm.initString = copyString("init", 4);
 
     defineNative("clock", clockNative);
+    defineNative("peek", peekNative);
 }
 
 void freeVM() {
@@ -274,6 +292,17 @@ static InterpretResult run() {
         double a = AS_NUMBER(pop()); \
         push(valueType(a op b)); \
     } while (false)
+#define BINARY_UINT_OP(op) \
+    do { \
+        if (!is_uint32(peek(0)) || !is_uint32(peek(1))) { \
+            runtimeError("Operands must be numbers that can be uint32."); \
+            return INTERPRET_RUNTIME_ERROR; \
+        } \
+        uint32_t b = as_uint32(pop()); \
+        uint32_t a = as_uint32(pop()); \
+        uint32_t result = a op b; \
+        push(NUMBER_VAL((double) result)); \
+    } while (false)
 
     for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
@@ -418,6 +447,29 @@ static InterpretResult run() {
                 }
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
+            case OP_BIT_AND: BINARY_UINT_OP(&); break;
+            case OP_BIT_OR: BINARY_UINT_OP(|); break;
+            case OP_BIT_XOR: BINARY_UINT_OP(^); break;
+            case OP_LEFT_SHIFT: BINARY_UINT_OP(<<); break;
+            case OP_RIGHT_SHIFT: BINARY_UINT_OP(>>); break;
+            case OP_POKE: {
+                if (!is_uint32(peek(0)) || !is_uint32(peek(1))) {
+                    runtimeError("Operands must be numbers that can be uint32.");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
+
+                uint32_t value = as_uint32(pop());
+
+                uint32_t address = as_uint32(pop());
+                volatile uint32_t* reg = (volatile uint32_t*) (uintptr_t)address;
+
+#ifdef LOX_PICO_SDK
+                *reg = value;
+#else
+                printf("poke(%10.p, 0x%08.x)\n", reg, value);
+#endif
+                break;
+            }
             case OP_PRINT: {
                 printValue(pop());
                 printf("\n");
@@ -523,6 +575,7 @@ static InterpretResult run() {
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+#undef BINARY_UINT_OP
 }
 
 InterpretResult interpret(const char* source) {
