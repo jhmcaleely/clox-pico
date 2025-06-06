@@ -450,6 +450,11 @@ static void binary(bool canAssign) {
         case TOKEN_MINUS:         emitByte(OP_SUBTRACT); break;
         case TOKEN_STAR:          emitByte(OP_MULTIPLY); break;
         case TOKEN_SLASH:         emitByte(OP_DIVIDE); break;
+        case TOKEN_LEFT_SHIFT:    emitByte(OP_LEFT_SHIFT); break;
+        case TOKEN_RIGHT_SHIFT:   emitByte(OP_RIGHT_SHIFT); break;
+        case TOKEN_BAR:           emitByte(OP_BIT_OR); break;
+        case TOKEN_AMP:           emitByte(OP_BIT_AND); break;
+        case TOKEN_CARET:         emitByte(OP_BIT_XOR); break;
         default:
             return; // Unreachable.
     }
@@ -614,14 +619,19 @@ ParseRule rules[] = {
     [TOKEN_SEMICOLON]     = {NULL,     NULL,   PREC_NONE},
     [TOKEN_SLASH]         = {NULL,     binary, PREC_FACTOR},
     [TOKEN_STAR]          = {NULL,     binary, PREC_FACTOR},
+    [TOKEN_BAR]           = {NULL,     binary, PREC_TERM},
+    [TOKEN_AMP]           = {NULL,     binary, PREC_TERM},
+    [TOKEN_CARET]         = {NULL,     binary, PREC_TERM},
     [TOKEN_BANG]          = {unary,    NULL,   PREC_NONE},
     [TOKEN_BANG_EQUAL]    = {NULL,     binary, PREC_EQUALITY},
     [TOKEN_EQUAL]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_EQUAL_EQUAL]   = {NULL,     binary, PREC_EQUALITY},
     [TOKEN_GREATER]       = {NULL,     binary, PREC_COMPARISON},
     [TOKEN_GREATER_EQUAL] = {NULL,     binary, PREC_COMPARISON},
+    [TOKEN_RIGHT_SHIFT]   = {NULL,     binary, PREC_FACTOR},
     [TOKEN_LESS]          = {NULL,     binary, PREC_COMPARISON},
     [TOKEN_LESS_EQUAL]    = {NULL,     binary, PREC_COMPARISON},
+    [TOKEN_LEFT_SHIFT]    = {NULL,     binary, PREC_FACTOR},
     [TOKEN_IDENTIFIER]    = {variable, NULL,   PREC_NONE},
     [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
     [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},

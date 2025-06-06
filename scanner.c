@@ -247,14 +247,25 @@ Token scanToken() {
         case '+': return makeToken(TOKEN_PLUS);
         case '/': return makeToken(TOKEN_SLASH);
         case '*': return makeToken(TOKEN_STAR);
+        case '|': return makeToken(TOKEN_BAR);
+        case '&': return makeToken(TOKEN_AMP);
+        case '^': return makeToken(TOKEN_CARET);
         case '!':
             return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
         case '=':
             return makeToken(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
         case '<':
-            return makeToken(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
+            switch (peek()) {
+                case '<': advance(); return makeToken(TOKEN_LEFT_SHIFT);
+                case '=': advance(); return makeToken(TOKEN_LESS_EQUAL);
+                default: return makeToken(TOKEN_LESS);
+            }  
         case '>':
-            return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+            switch (peek()) {
+                case '>': advance(); return makeToken(TOKEN_RIGHT_SHIFT);
+                case '=': advance(); return makeToken(TOKEN_GREATER_EQUAL);
+                default: return makeToken(TOKEN_GREATER);
+            }
         case '"': return string();
     }
 
