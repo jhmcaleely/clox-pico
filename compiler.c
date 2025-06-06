@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "common.h"
 #include "compiler.h"
@@ -135,6 +136,40 @@ static bool match(TokenType type) {
     if (!check(type)) return false;
     advance();
     return true;
+}
+
+static uint32_t strtoNum(const char* literal, int length, int radix) {
+    uint32_t val = 0;
+    for (int i = length - 1 ; i >= 0; i--) {
+        uint32_t positionVal = 0;
+        switch (literal[i]) {
+            case '0': positionVal = 0; break;
+            case '1': positionVal = 1; break;
+            case '2': positionVal = 2; break;
+            case '3': positionVal = 3; break;
+            case '4': positionVal = 4; break;
+            case '5': positionVal = 5; break;
+            case '6': positionVal = 6; break;
+            case '7': positionVal = 7; break;
+            case '8': positionVal = 8; break;
+            case '9': positionVal = 9; break;
+            case 'A': positionVal = 10; break;
+            case 'B': positionVal = 11; break;
+            case 'C': positionVal = 12; break;
+            case 'D': positionVal = 13; break;
+            case 'E': positionVal = 14; break;
+            case 'F': positionVal = 15; break;
+            case 'a': positionVal = 10; break;
+            case 'b': positionVal = 11; break;
+            case 'c': positionVal = 12; break;
+            case 'd': positionVal = 13; break;
+            case 'e': positionVal = 14; break;
+            case 'f': positionVal = 15; break;
+        }
+        uint32_t power = length - 1 - i;
+        val += positionVal * pow(radix, power);
+    }
+    return val;
 }
 
 static void emitByte(uint8_t byte) {
@@ -460,6 +495,17 @@ static void number(bool canAssign) {
     emitConstant(NUMBER_VAL(value));
 }
 
+static void hexnum(bool canAssign) {
+
+    // strip off the 0x prefix
+    const char* number_start = &parser.previous.start[2];
+    int number_len = parser.previous.length - 2;
+
+    uint32_t value = strtoNum(number_start, number_len, 16);
+
+    emitConstant(NUMBER_VAL(value));
+}
+
 static void or_(bool canAssign) {
     int elseJump = emitJump(OP_JUMP_IF_FALSE);
     int endJump = emitJump(OP_JUMP);
@@ -579,6 +625,7 @@ ParseRule rules[] = {
     [TOKEN_IDENTIFIER]    = {variable, NULL,   PREC_NONE},
     [TOKEN_STRING]        = {string,   NULL,   PREC_NONE},
     [TOKEN_NUMBER]        = {number,   NULL,   PREC_NONE},
+    [TOKEN_HEX_NUMBER]    = {hexnum,   NULL,   PREC_NONE},
     [TOKEN_AND]           = {NULL,     and_,   PREC_NONE},
     [TOKEN_CLASS]         = {NULL,     NULL,   PREC_NONE},
     [TOKEN_ELSE]          = {NULL,     NULL,   PREC_NONE},
