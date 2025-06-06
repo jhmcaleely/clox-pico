@@ -274,6 +274,17 @@ static InterpretResult run() {
         double a = AS_NUMBER(pop()); \
         push(valueType(a op b)); \
     } while (false)
+#define BINARY_UINT_OP(op) \
+    do { \
+        if (!is_uint32(peek(0)) || !is_uint32(peek(1))) { \
+            runtimeError("Operands must be numbers that can be uint32."); \
+            return INTERPRET_RUNTIME_ERROR; \
+        } \
+        uint32_t b = as_uint32(pop()); \
+        uint32_t a = as_uint32(pop()); \
+        uint32_t result = a op b; \
+        push(NUMBER_VAL((double) result)); \
+    } while (false)
 
     for (;;) {
 #ifdef DEBUG_TRACE_EXECUTION
@@ -418,6 +429,11 @@ static InterpretResult run() {
                 }
                 push(NUMBER_VAL(-AS_NUMBER(pop())));
                 break;
+            case OP_BIT_AND: BINARY_UINT_OP(&); break;
+            case OP_BIT_OR: BINARY_UINT_OP(|); break;
+            case OP_BIT_XOR: BINARY_UINT_OP(^); break;
+            case OP_LEFT_SHIFT: BINARY_UINT_OP(<<); break;
+            case OP_RIGHT_SHIFT: BINARY_UINT_OP(>>); break;
             case OP_PRINT: {
                 printValue(pop());
                 printf("\n");
@@ -523,6 +539,7 @@ static InterpretResult run() {
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+#undef BINARY_UINT_OP
 }
 
 InterpretResult interpret(const char* source) {
