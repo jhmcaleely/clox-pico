@@ -69,7 +69,7 @@ There are three additions to the Lox language:
  - Bitwise operations `<<`, `>>`, `|`, `&`, and `^`, similar to C. They truncate (reporting an error for out of range) a Number to an unsigned 32 bit integer before performing the operation.
  - `peek()` and `poke address, value`. `peek()` reads a 32bit uint from the specified memory address. `poke` writes the value (truncating it to a 32bit uint) to the specified memory address. Intended for manipulating peripheral registers.
 
- These additions are excercised in specimen/led-on.lox, which will turn on the built in LED on a Pico or Pico 2.
+ These additions are excercised in specimen/led-on-rp2040-pico.lox, which will turn on the built in LED on a Pico. Note that additional code in the gpio_ functions would be needed to manipulate the GPIOs on a Pico2 in addition to the Pico.
 
 ### Performance
 
