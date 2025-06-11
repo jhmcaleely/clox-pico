@@ -1,19 +1,22 @@
-var PICO_LED = 25;
-
-var GPIO_OUT = true;
-var GPIO_IN = false;
-
-var GPIO_FUNC_SIO = 0x5;
 var SIO_HW = 0xd0000000;
 var GPIO_OUT_OFFSET = 0x10;
-var GPIO_OE_OFFSET  = 0x20;
+var SIO_REGISTER_ALIAS_STRIDE = 4;
+var SET_OFFSET = 1 * SIO_REGISTER_ALIAS_STRIDE;
+var CLR_OFFSET = 2 * SIO_REGISTER_ALIAS_STRIDE;
+var SIO_GPIO_OUT = SIO_HW + GPIO_OUT_OFFSET;
 
-var PADS_BANK0_BASE = 0x4001c000;
-var IO_BANK0_BASE   = 0x40014000;
+fun gpio_put(pin, value) {
+    var alias_offset;
 
-var PADS_BANK0_GPIO0_IE_BITS  = 0x00000040;
-var PADS_BANK0_GPIO0_OD_BITS  = 0x00000080;
-var PADS_BANK0_GPIO0_ISO_BITS = 0x00000100;
+    if (value) {
+        alias_offset = SET_OFFSET;
+    }
+    else {
+        alias_offset = CLR_OFFSET;
+    }
+
+    poke SIO_GPIO_OUT + alias_offset, 1 << pin;
+}
 
 class alias_reg {
     init(addr, stride) { this.base = addr; this.stride = stride; }
@@ -27,6 +30,18 @@ class alias_reg {
     xor(mask) { poke this.base + 3 * this.stride, mask; }
 }
 
+var GPIO_IN = false;
+
+var GPIO_FUNC_SIO = 0x5;
+var GPIO_OE_OFFSET  = 0x20;
+
+var PADS_BANK0_BASE = 0x4001c000;
+var IO_BANK0_BASE   = 0x40014000;
+
+var PADS_BANK0_GPIO0_IE_BITS  = 0x00000040;
+var PADS_BANK0_GPIO0_OD_BITS  = 0x00000080;
+var PADS_BANK0_GPIO0_ISO_BITS = 0x00000100;
+
 fun gpio_set_direction(pin, dir) {
     var ctrl = alias_reg(SIO_HW + GPIO_OE_OFFSET, 4);
     var pin_mask = 1 << pin;
@@ -36,23 +51,6 @@ fun gpio_set_direction(pin, dir) {
     else {
         ctrl.clr(pin_mask);
     }
-}
-
-fun gpio_put(pin, value) {
-    var ctrl = alias_reg(SIO_HW + GPIO_OUT_OFFSET, 4);
-    var pin_mask = 1 << pin;
-    if (value) {
-        ctrl.set(pin_mask);
-    }
-    else {
-        ctrl.clr(pin_mask);
-    }
-}
-
-fun gpio_init(pin) {
-    gpio_set_direction(pin, GPIO_IN);
-    gpio_put(pin, false);
-    gpio_set_function(pin, GPIO_FUNC_SIO);
 }
 
 fun gpio_set_function(pin, function) {
@@ -66,6 +64,15 @@ fun gpio_set_function(pin, function) {
     var hw_ctrl = alias_reg(IO_BANK0_BASE + ctrl_offset, 4096);
     hw_ctrl.write(function);
 }
+
+fun gpio_init(pin) {
+    gpio_set_direction(pin, GPIO_IN);
+    gpio_put(pin, false);
+    gpio_set_function(pin, GPIO_FUNC_SIO);
+}
+
+var PICO_LED = 25;
+var GPIO_OUT = true;
 
 gpio_init(PICO_LED);
 gpio_set_direction(PICO_LED, GPIO_OUT);
