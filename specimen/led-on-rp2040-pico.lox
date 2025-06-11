@@ -3,8 +3,6 @@ var PICO_LED = 25;
 var GPIO_OUT = true;
 var GPIO_IN = false;
 
-var RP2040 = true;
-
 var GPIO_FUNC_SIO = 0x5;
 var SIO_HW = 0xd0000000;
 var GPIO_OUT_OFFSET = 0x10;
@@ -67,10 +65,6 @@ fun gpio_set_function(pin, function) {
     var ctrl_offset = 8 * pin + 4;
     var hw_ctrl = alias_reg(IO_BANK0_BASE + ctrl_offset, 4096);
     hw_ctrl.write(function);
-
-    if (!RP2040) {
-        pinctrl.clr(PADS_BANK0_GPIO0_ISO_BITS);
-    }
 }
 
 gpio_init(PICO_LED);
